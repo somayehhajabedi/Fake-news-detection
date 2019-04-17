@@ -41,10 +41,22 @@ class FakeNewsDetector:
                               "won't",
                               "wouldn", "wouldn't"])
         self.trainFile = trainFile
+   
+    def cleanup(self):
+        for i in range(len(self.df)):
+            self.df.loc[i, 'text'] = self.clsLine(self.df.loc[i,'text'])
 
+
+    def clsLine(self, line):
+            line = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", line).lower().split()
+            return " ".join([w for w in line if not w in self.stopwords])
+                   .translate(str.maketrans("", "", string.punctuation))
+                
+    
     def extractFeatures(self):
         self.df = pd.read_csv(self.trainFile, header=0)
         # print(self.df.count())
+        # self.cleanup();
         self.df = self.df.head(5000)
         missing_rows = []
         for item in range(len(self.df)):
