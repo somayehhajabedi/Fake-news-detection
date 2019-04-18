@@ -5,7 +5,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from gensim import utils
 from gensim.models.doc2vec import Doc2Vec
 from gensim.models.doc2vec import LabeledSentence
-
+import re
+import string
 
 class FakeNewsDetector:
 
@@ -44,20 +45,21 @@ class FakeNewsDetector:
    
     def cleanup(self):
         for i in range(len(self.df)):
-            self.df.loc[i, 'text'] = self.clsLine(self.df.loc[i,'text'])
+          try:
+              self.df.loc[i, 'text'] = self.clsLine(self.df.loc[i,'text'])
+          except:
+            continue
 
 
     def clsLine(self, line):
             line = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", line).lower().split()
-            return " ".join([w for w in line if not w in self.stopwords])
-                   .translate(str.maketrans("", "", string.punctuation))
-                
+            return " ".join([w for w in line if not w in self.stopwords]).translate(str.maketrans("", "", string.punctuation))
+        
     
     def extractFeatures(self):
         self.df = pd.read_csv(self.trainFile, header=0)
-        # print(self.df.count())
-        # self.cleanup();
         self.df = self.df.head(5000)
+        self.cleanup();
         missing_rows = []
         for item in range(len(self.df)):
             if self.df.loc[item, "text"] != self.df.loc[item, "text"]:
@@ -110,7 +112,7 @@ class FakeNewsDetector:
         print(predict)
 
 
-trainFile = "D:\\bigData\\assignment\\bigdata-la3-w2019-minaboori\\data\\train.csv"
+trainFile = "train.csv"
 
 clf = FakeNewsDetector(trainFile)
 
